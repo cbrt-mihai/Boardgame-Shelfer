@@ -1,0 +1,19 @@
+# NAME  LENGTH  HEIGHT  WIDTH
+Clash of Rage, 38.7, 10.5, 38.7
+Mage Knight, 35.6, 12.7, 35.6
+Nidavellir, 25, 7.7, 25
+Nightmare Cathedral, 29.6, 15, 29.6 
+Oracle of Delphi, 31.5, 5.6, 22.6
+Power Plants, 29.5, 8, 21.5
+Quarriors, 33, 5.3, 26
+Ra, 27, 11, 22
+Ragnarocks, 30, 7.5, 30
+Rattus 1&2, 27.2, 11.6, 18.8
+Res Arcana, 24.8, 6.1, 24.8
+Rising Sun, 32.5, 28, 32.5
+Santorini, 30, 6.9, 30
+Sons of Faeriell, 32, 13.9, 32
+The Binding of Isaac: Four Souls, 30.8, 13, 25.5
+Veiled Fate, 31.8, 10.2, 26.7
+Welcome to the Dungeon, 15, 4, 10
+White Castle, 23, 6.6, 18
