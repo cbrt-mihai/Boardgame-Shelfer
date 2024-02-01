@@ -27,7 +27,6 @@ def floatRange(start, finish, step):
     return list
 
 def findIndex(name, list):
-    # print(f"INDEX: {list}")
     for i, elem in enumerate(list):
         if name == elem[0]:
             return i
@@ -42,19 +41,9 @@ def do_balance(x1r, x2r, x1e, x2e):
     lowerSeg = cutoff - max(x1r, x1e)
     upperSeg = x2r - cutoff
 
-    # print(lowerSeg, upperSeg, cutoff)
-
     if lowerSeg > upperSeg:
         return True
     return False
-
-# print("TEST DO_BALANCE")
-# assert do_balance(4, 10, 0, 5) == False
-# assert do_balance(2, 7, 0, 5) == True
-# assert do_balance(2, 7, 2, 7) == True
-# assert do_balance(2, 5, 7, 10) == False
-# assert do_balance(4, 7, 7, 10) == False
-# a = input()
 
 '''
 l1 : x1, y2
@@ -108,7 +97,6 @@ def prettyWriteDict(writePath, containers):
 
         for i, game in enumerate(games):
             file.write(f"{game},{location[i][0][0]},{location[i][0][1]},{location[i][1][0]},{location[i][1][1]}\n")
-        # file.write("\n")
     file.close()
 
 def detailedPrintDict(containers):
@@ -217,7 +205,6 @@ def addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, 
                 rect = createRect(st, nd)
                 for p, other in enumerate(container[1]["location"]):
                     bad = isBad(rect, other, entry)
-                    # whyIsBad(name, rect, other, entry)
 
                     if bad:
                         bad = True
@@ -281,18 +268,13 @@ if __name__ == "__main__":
         containers[name]["volume"] = bin[4]
     fileBins.close()
 
-    # print(items)
-    # print(f"{bins}\n")
-
     items.sort(key=take5th, reverse=True)
     bins.sort(key=take5th, reverse=True)
     containers = sorted(containers.items(),key=lambda x:getitem(x[1],'volume'), reverse=True)
 
     unchosenItems = items.copy()
 
-    # print(items)
     print(unchosenItems)
-    # print(bins)
     print(containers)
 
     # get the start time
@@ -325,14 +307,10 @@ if __name__ == "__main__":
                 break
             else:
                 cntName = container[0]
-                # print(container[0], container[1]["sizes"][0])
 
                 maxLength = container[1]["sizes"][0]
                 maxHeight = container[1]["sizes"][1]
                 maxWidth  = container[1]["sizes"][2]
-
-                # if volume > containers[i][1]["volume"]:
-                #     break
 
                 if length <= maxWidth and width <= maxLength and height <= maxHeight:
                     # If it fits by length, flat (you see width and height)
@@ -390,10 +368,7 @@ if __name__ == "__main__":
 
                     added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
 
-        # print(containers)
         containers.sort(key=sortCont, reverse=True)
-        # print(containers)
-        # print()
 
 
     prettyPrintDict(containers)
