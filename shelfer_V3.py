@@ -27,6 +27,7 @@ def floatRange(start, finish, step):
     return list
 
 def findIndex(name, list):
+    # print(f"INDEX: {list}")
     for i, elem in enumerate(list):
         if name == elem[0]:
             return i
@@ -41,9 +42,19 @@ def do_balance(x1r, x2r, x1e, x2e):
     lowerSeg = cutoff - max(x1r, x1e)
     upperSeg = x2r - cutoff
 
+    # print(lowerSeg, upperSeg, cutoff)
+
     if lowerSeg > upperSeg:
         return True
     return False
+
+# print("TEST DO_BALANCE")
+# assert do_balance(4, 10, 0, 5) == False
+# assert do_balance(2, 7, 0, 5) == True
+# assert do_balance(2, 7, 2, 7) == True
+# assert do_balance(2, 5, 7, 10) == False
+# assert do_balance(4, 7, 7, 10) == False
+# a = input()
 
 '''
 l1 : x1, y2
@@ -97,6 +108,7 @@ def prettyWriteDict(writePath, containers):
 
         for i, game in enumerate(games):
             file.write(f"{game},{location[i][0][0]},{location[i][0][1]},{location[i][1][0]},{location[i][1][1]}\n")
+        # file.write("\n")
     file.close()
 
 def detailedPrintDict(containers):
@@ -190,6 +202,13 @@ def newRectCoords(where, entry, addX, addY):
 def createRect(a, b):
     return [[a.x, a.y], [float("%.1f" % b.x), float("%.1f" % b.y)]]
 
+def isInNonStackableList(name, nonStackableList):
+    for i, nsItems in enumerate(nonStackableList):
+        itemName = nsItems[0]
+        if name == itemName:
+            return True
+    return False
+
 def addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY):
     rect = createRect(Point(0, 0), Point(addX, addY))
 
@@ -197,14 +216,26 @@ def addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, 
         putItem(unchosenItems, rect, name, containers, orientation, tag)
         return True
 
-    for k, entry in enumerate(container[1]["location"]):
-        for mod in ["r", "u"]:
+    prio = ["u", "r"]
+    if isInNonStackableList(name, nonStackableItems):
+        prio = ["r", "u"]
+
+    for mod in prio:
+        for k, entry in enumerate(container[1]["location"]):
             st, nd = newRectCoords(mod, entry, addX, addY)
 
             if nd.x <= maxLength and nd.y <= maxHeight:
                 rect = createRect(st, nd)
                 for p, other in enumerate(container[1]["location"]):
-                    bad = isBad(rect, other, entry)
+                    bec = False
+                    if mod == "u":
+                        otherName = container[1]["games"][p].split("-")[0]
+                        bec = isInNonStackableList(otherName, nonStackableItems)
+                    if not bec:
+                        bad = isBad(rect, other, entry)
+                    else:
+                        bad = True
+                    # whyIsBad(name, rect, other, entry)
 
                     if bad:
                         bad = True
@@ -225,6 +256,7 @@ if __name__ == "__main__":
 
 
     items = []
+    nonStackableItems = []
     bins = []
     containers = {}
 
@@ -243,7 +275,10 @@ if __name__ == "__main__":
         item = [name, length, height, width]
         item.append(float("%.1f" % volume(item)))
 
-        items.append(item)
+        if len(parts) == 4:
+            items.append(item)
+        else:
+            nonStackableItems.append(item)
     fileItems.close()
 
     fileBins = open(pathBins, "r")
@@ -268,13 +303,18 @@ if __name__ == "__main__":
         containers[name]["volume"] = bin[4]
     fileBins.close()
 
-    items.sort(key=take5th, reverse=True)
-    bins.sort(key=take5th, reverse=True)
-    containers = sorted(containers.items(),key=lambda x:getitem(x[1],'volume'), reverse=True)
+    # print(items)
+    # print(f"{bins}\n")
+
+    items.sort(key=takeLen, reverse=True)
+    bins.sort(key=take5th, reverse=False)
+    containers = sorted(containers.items(),key=lambda x:getitem(x[1],'volume'), reverse=False)
 
     unchosenItems = items.copy()
 
+    # print(items)
     print(unchosenItems)
+    # print(bins)
     print(containers)
 
     # get the start time
@@ -300,17 +340,21 @@ if __name__ == "__main__":
         if item not in unchosenItems:
             continue
 
-        containers = sorted(containers, key=lambda x: getitem(x[1], 'volume'), reverse=True)
+        containers = sorted(containers, key=lambda x: getitem(x[1], 'volume'), reverse=False)
         print(containers)
         for i, container in enumerate(containers):
             if added:
                 break
             else:
                 cntName = container[0]
+                # print(container[0], container[1]["sizes"][0])
 
                 maxLength = container[1]["sizes"][0]
                 maxHeight = container[1]["sizes"][1]
                 maxWidth  = container[1]["sizes"][2]
+
+                # if volume > containers[i][1]["volume"]:
+                #     break
 
                 if length <= maxWidth and width <= maxLength and height <= maxHeight:
                     # If it fits by length, flat (you see width and height)
@@ -368,14 +412,129 @@ if __name__ == "__main__":
 
                     added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
 
+        # print(containers)
         containers.sort(key=sortCont, reverse=True)
+        # print(containers)
+        # print()
 
+    # NON-STACKABLE GAMES SHELVING
+    nonStackableItems.sort(key=takeLen, reverse=True)
+    bins.sort(key=take5th, reverse=False)
+
+    unchosenItems = nonStackableItems.copy()
+
+    # print(items)
+    print(unchosenItems)
+    # print(bins)
+    print(containers)
+
+    # get the start time
+    st = time.time()
+    totalItems = len(unchosenItems)
+
+    unchosenCopy = unchosenItems.copy()
+    for j, item in enumerate(unchosenCopy):
+        name = item[0]
+        length = item[1]
+        height = item[2]
+        width = item[3]
+        volume = item[4]
+        added = False
+
+        # get the end time
+        et = time.time()
+        elapsed_time = et - st
+        remainingItems = len(unchosenItems)
+        print('\nElapsed time:', elapsed_time, 'seconds')
+        print(
+            f"{remainingItems} items left, {remainingItems * elapsed_time / max(0.00000001, (totalItems - remainingItems))} seconds left.\n")
+
+        if item not in unchosenItems:
+            continue
+
+        containers = sorted(containers, key=lambda x: getitem(x[1], 'volume'), reverse=False)
+        print(containers)
+        for i, container in enumerate(containers):
+            if added:
+                break
+            else:
+                cntName = container[0]
+                # print(container[0], container[1]["sizes"][0])
+
+                maxLength = container[1]["sizes"][0]
+                maxHeight = container[1]["sizes"][1]
+                maxWidth = container[1]["sizes"][2]
+
+                # if volume > containers[i][1]["volume"]:
+                #     break
+
+                if length <= maxWidth and width <= maxLength and height <= maxHeight:
+                    # If it fits by length, flat (you see width and height)
+
+                    if added:
+                        break
+
+                    addX = width
+                    addY = height
+
+                    orientation = "fits flat by length"
+                    tag = "-flat-len"
+
+                    added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
+
+                if width <= maxWidth and length <= maxLength and height <= maxHeight:
+                    # If it fits by width, flat (you see length and height)
+
+                    if added:
+                        break
+
+                    addX = length
+                    addY = height
+
+                    orientation = "fits flat by width"
+                    tag = "-flat-wid"
+
+                    added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
+
+                if length <= maxWidth and width <= maxHeight and height <= maxLength:
+                    # If it fits by length, upright (you see width and height)
+
+                    if added:
+                        break
+
+                    addX = height
+                    addY = width
+
+                    orientation = "fits upright by length"
+                    tag = "-upright-len"
+
+                    added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
+
+                if width <= maxWidth and length <= maxHeight and height <= maxLength:
+                    # If it fits by width, upright (you see length and height)
+                    if added:
+                        break
+
+                    addX = height
+                    addY = length
+
+                    orientation = "fits upright by width"
+                    tag = "-upright-width"
+
+                    added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
+
+        # print(containers)
+        containers.sort(key=sortCont, reverse=True)
+        # print(containers)
+        # print()
 
     prettyPrintDict(containers)
     prettyWriteDict(pathOutput, containers)
     containers.sort(key=sortCont, reverse=True)
     print(f"Can't fit: {unchosenItems}")
     detailedPrintDict(containers)
+
+    print(f"Can't fit: {unchosenItems}")
 
     elapsed_time = et - st
     print('Execution time:', elapsed_time, 'seconds')

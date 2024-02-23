@@ -1,19 +1,59 @@
 # NAME  LENGTH  HEIGHT  WIDTH
+#Counterfeiters, 19.1, 4.5, 13.
+#Monty Python Fluxx, 12.7, 2.5, 9.5
+#Warp's Edge, 24.1, 7.4, 18.4, X
+Abomination: The Heir of Frankenstein, 29.7, 7.1, 29.7
+Abyss, 28.5, 7.5, 28.5
+Age of Atlantis, 27.9, 7.6, 27.9
+Ankh: Gods of Egypt, 32.4, 28, 32.4, X
+Bullet, 30, 15, 30
+Castles of Burgundy + builds, 37, 23.5, 27
+Chamber of Wonders, 33, 7, 33, X
 Clash of Rage, 38.7, 10.5, 38.7
+Cleopatra and the Society of Architects, 30.5, 17.8, 30.5
+Decorum, 29.5, 7.5, 29.5
+Dragon Castle, 29.7, 7.1, 29.7
+Elysium, 29.5, 7.9, 29.5
+Evil Corp., 30, 7, 30
+Evolution: Climate, 29.7, 9.3, 29.7
+Evolution: Flight, 22.9, 5.1, 20.3
+Fantasy Realms Deluxe, 22.9, 3.8, 16.5
+First Contact, 26.5, 6, 26.5
+Flamecraft, 29.7, 7, 29.7
+Fleet: The Dice Game, 21.6, 5.1, 15.7
+Game of Thrones: B'Twixt, 23.1, 5.3, 16.1
+Hidden Leaders Kickstarter, 22.8, 5.2, 16
+Isla Dorada, 30, 7.6, 30
+It's a Wonderful Kingdom, 29.7, 7.1, 29.7
+It's a Wonderful World, 29, 7, 29
+Life of the Amazonia, 29.7, 7.1, 29.7
 Mage Knight, 35.6, 12.7, 35.6
+Mythic Mischief, 25.1, 12.1, 20.6, X
 Nidavellir, 25, 7.7, 25
 Nightmare Cathedral, 29.6, 15, 29.6 
+Nothing Personal, 29.7, 9.5, 29.7, X
 Oracle of Delphi, 31.5, 5.6, 22.6
-Power Plants, 29.5, 8, 21.5
-Quarriors, 33, 5.3, 26
+Oros, 29.6, 11.6, 29.6
+Power Plants, 29.5, 8, 21.5, X
+Quarriors, 33, 5.3, 26, X
 Ra, 27, 11, 22
+Race for the Galaxy Alien, 19.1, 6.7, 14
+Race for the Galaxy Arc1, 27.4, 6.6, 19.1
+Race for the Galaxy Base, 27.4, 6.6, 19.1
+Race for the Galaxy Xeno, 19.1, 6.7, 14
 Ragnarocks, 30, 7.5, 30
 Rattus 1&2, 27.2, 11.6, 18.8
 Res Arcana, 24.8, 6.1, 24.8
 Rising Sun, 32.5, 28, 32.5
+Sanctum, 37, 7.5, 25.5
 Santorini, 30, 6.9, 30
+Santorini: Golden Fleece, 29.8, 6.6, 15
+Skulk Peak, 29.7, 14.2, 29.7
 Sons of Faeriell, 32, 13.9, 32
+Spirit Island, 29.3, 16.2, 29.3, X
 The Binding of Isaac: Four Souls, 30.8, 13, 25.5
 Veiled Fate, 31.8, 10.2, 26.7
+Vindication, 39.4, 11.3, 31.8, X
 Welcome to the Dungeon, 15, 4, 10
-White Castle, 23, 6.6, 18
+White Castle, 23, 6.6, 18, X
+Yamatai, 29.5, 7.5, 29.5
