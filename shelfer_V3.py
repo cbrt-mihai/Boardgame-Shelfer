@@ -1,81 +1,32 @@
 import time
 from operator import getitem
+from utils import volume, take5th, takeLen, do_overlap
 
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
-def volume(item):
-    return item[1] * item[2] * item[3]
 
-def take5th(item):
-    return item[4]
-
-def takeLen(item):
-    return item[1]
-
-def dictSort(dict, key):
-    return dict[key]["info"]
-
-def floatRange(start, finish, step):
-    list = []
-    while start < finish:
-        list.append(float("%.1f" % start))
-        start += step
-
-    return list
-
-def findIndex(name, list):
-    # print(f"INDEX: {list}")
-    for i, elem in enumerate(list):
-        if name == elem[0]:
+def findIndex(name_, list_):
+    for i, elem in enumerate(list_):
+        if name_ == elem[0]:
             return i
 
     return -1
 
-def sortCont(item):
-    return item[1]["volume"]
+def sortCont(item_):
+    return item_[1]["volume"]
 
 def do_balance(x1r, x2r, x1e, x2e):
     cutoff = min(x2r, x2e)
     lowerSeg = cutoff - max(x1r, x1e)
     upperSeg = x2r - cutoff
 
-    # print(lowerSeg, upperSeg, cutoff)
-
     if lowerSeg > upperSeg:
         return True
     return False
 
-# print("TEST DO_BALANCE")
-# assert do_balance(4, 10, 0, 5) == False
-# assert do_balance(2, 7, 0, 5) == True
-# assert do_balance(2, 7, 2, 7) == True
-# assert do_balance(2, 5, 7, 10) == False
-# assert do_balance(4, 7, 7, 10) == False
-# a = input()
-
-'''
-l1 : x1, y2
-r1 : x2, y1
-l2 : a1, b2
-r2 : a2, b1
-'''
-def do_overlap(l1, r1, l2, r2):
-    # if rectangle has area 0, no overlap
-    if l1.x == r1.x or l1.y == r1.y or r2.x == l2.x or l2.y == r2.y:
-        return False
-
-    # If one rectangle is on left side of other
-    if l1.x >= r2.x or l2.x >= r1.x:
-        return False
-
-    # If one rectangle is above other
-    if r1.y >= l2.y or r2.y >= l1.y:
-        return False
-
-    return True
 
 def prettyPrintDict(containers):
     for container in containers:
@@ -108,7 +59,6 @@ def prettyWriteDict(writePath, containers):
 
         for i, game in enumerate(games):
             file.write(f"{game},{location[i][0][0]},{location[i][0][1]},{location[i][1][0]},{location[i][1][1]}\n")
-        # file.write("\n")
     file.close()
 
 def detailedPrintDict(containers):
@@ -224,6 +174,7 @@ def addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, 
         for k, entry in enumerate(container[1]["location"]):
             st, nd = newRectCoords(mod, entry, addX, addY)
 
+            bad = False
             if nd.x <= maxLength and nd.y <= maxHeight:
                 rect = createRect(st, nd)
                 for p, other in enumerate(container[1]["location"]):
@@ -235,7 +186,6 @@ def addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, 
                         bad = isBad(rect, other, entry)
                     else:
                         bad = True
-                    # whyIsBad(name, rect, other, entry)
 
                     if bad:
                         bad = True
@@ -301,10 +251,8 @@ if __name__ == "__main__":
         containers[name]["location"] = []
         containers[name]["sizes"] = [bin[1], bin[2], bin[3]]
         containers[name]["volume"] = bin[4]
-    fileBins.close()
 
-    # print(items)
-    # print(f"{bins}\n")
+    fileBins.close()
 
     items.sort(key=takeLen, reverse=True)
     bins.sort(key=take5th, reverse=False)
@@ -312,9 +260,7 @@ if __name__ == "__main__":
 
     unchosenItems = items.copy()
 
-    # print(items)
     print(unchosenItems)
-    # print(bins)
     print(containers)
 
     # get the start time
@@ -347,18 +293,13 @@ if __name__ == "__main__":
                 break
             else:
                 cntName = container[0]
-                # print(container[0], container[1]["sizes"][0])
 
                 maxLength = container[1]["sizes"][0]
                 maxHeight = container[1]["sizes"][1]
                 maxWidth  = container[1]["sizes"][2]
 
-                # if volume > containers[i][1]["volume"]:
-                #     break
-
                 if length <= maxWidth and width <= maxLength and height <= maxHeight:
                     # If it fits by length, flat (you see width and height)
-
                     if added:
                         break
 
@@ -372,7 +313,6 @@ if __name__ == "__main__":
 
                 if width <= maxWidth and length <= maxLength and height <= maxHeight:
                     # If it fits by width, flat (you see length and height)
-
                     if added:
                         break
 
@@ -386,7 +326,6 @@ if __name__ == "__main__":
 
                 if length <= maxWidth and width <= maxHeight and height <= maxLength:
                     # If it fits by length, upright (you see width and height)
-
                     if added:
                         break
 
@@ -412,10 +351,7 @@ if __name__ == "__main__":
 
                     added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
 
-        # print(containers)
         containers.sort(key=sortCont, reverse=True)
-        # print(containers)
-        # print()
 
     # NON-STACKABLE GAMES SHELVING
     nonStackableItems.sort(key=takeLen, reverse=True)
@@ -423,9 +359,7 @@ if __name__ == "__main__":
 
     unchosenItems = nonStackableItems.copy()
 
-    # print(items)
     print(unchosenItems)
-    # print(bins)
     print(containers)
 
     # get the start time
@@ -459,18 +393,13 @@ if __name__ == "__main__":
                 break
             else:
                 cntName = container[0]
-                # print(container[0], container[1]["sizes"][0])
 
                 maxLength = container[1]["sizes"][0]
                 maxHeight = container[1]["sizes"][1]
                 maxWidth = container[1]["sizes"][2]
 
-                # if volume > containers[i][1]["volume"]:
-                #     break
-
                 if length <= maxWidth and width <= maxLength and height <= maxHeight:
                     # If it fits by length, flat (you see width and height)
-
                     if added:
                         break
 
@@ -484,7 +413,6 @@ if __name__ == "__main__":
 
                 if width <= maxWidth and length <= maxLength and height <= maxHeight:
                     # If it fits by width, flat (you see length and height)
-
                     if added:
                         break
 
@@ -498,7 +426,6 @@ if __name__ == "__main__":
 
                 if length <= maxWidth and width <= maxHeight and height <= maxLength:
                     # If it fits by length, upright (you see width and height)
-
                     if added:
                         break
 
@@ -523,10 +450,7 @@ if __name__ == "__main__":
 
                     added = addThroughRotation(unchosenItems, name, containers, orientation, tag, addX, addY)
 
-        # print(containers)
         containers.sort(key=sortCont, reverse=True)
-        # print(containers)
-        # print()
 
     prettyPrintDict(containers)
     prettyWriteDict(pathOutput, containers)
