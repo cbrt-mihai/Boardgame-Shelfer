@@ -43,14 +43,15 @@ All dimensions must use the same unit system (the examples use centimeters).
 1. Copy or edit `items.txt` and `bins.txt` to match your collection and furniture.
 2. Run the desired script from the project root (paths inside the scripts default to the filenames above):
 
-   ```bash
-   python3 shelfer_V3.py
-   ```
-
-   or, for the newer rules and search behavior:
-
+   for the improved newer rules and search behavior
    ```bash
    python3 shelfer_V3_4.py
+   ```
+
+   or, for the older, less refined version:
+
+   ```bash
+   python3 shelfer_V3.py
    ```
 
 3. Inspect the generated output file (by default `output.txt`; confirm the path configured at the bottom of `shelfer_V3_4.py` or in `shelfer_V3.py` if you use that script).
