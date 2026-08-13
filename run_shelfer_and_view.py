@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-Run shelfer_V3_4.py, then serve this directory over HTTP and open the p5.js preview.
+Run shelfer_V5.py, then serve this directory over HTTP and open the p5.js preview.
 
 loadStrings('output.txt') requires a real HTTP origin (not file://) in most browsers.
 p5.js is loaded from p5_libs/p5.js (no internet required).
+
+Extra arguments are forwarded to shelfer_V5.py, e.g.:
+  python3 run_shelfer_and_view.py --profile dense -q
 """
 from __future__ import annotations
 
@@ -16,7 +19,7 @@ import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SHELFER = ROOT / "shelfer_V3_4.py"
+SHELFER = ROOT / "shelfer_V5.py"
 P5_LIB = ROOT / "p5_libs" / "p5.js"
 DEFAULT_PORT = 8765
 MAX_PORT_TRIES = 20
@@ -33,15 +36,29 @@ def main() -> None:
         )
         sys.exit(1)
 
+    shelfer_args = sys.argv[1:]
     proc = subprocess.run(
-        [sys.executable, str(SHELFER)],
+        [sys.executable, str(SHELFER), *shelfer_args],
         cwd=ROOT,
     )
     if proc.returncode != 0:
         sys.exit(proc.returncode)
 
-    if not (ROOT / "output.txt").is_file():
-        print("No output.txt found after shelfer run; nothing to visualize.", file=sys.stderr)
+    # Respect a custom --output / -o if the user passed one
+    output_name = "output.txt"
+    for i, arg in enumerate(shelfer_args):
+        if arg in ("-o", "--output") and i + 1 < len(shelfer_args):
+            output_name = shelfer_args[i + 1]
+            break
+        if arg.startswith("--output="):
+            output_name = arg.split("=", 1)[1]
+            break
+
+    output_path = Path(output_name)
+    if not output_path.is_absolute():
+        output_path = ROOT / output_path
+    if not output_path.is_file():
+        print(f"No {output_path.name} found after shelfer run; nothing to visualize.", file=sys.stderr)
         sys.exit(1)
 
     class _ProjectDirHandler(http.server.SimpleHTTPRequestHandler):
