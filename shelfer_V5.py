@@ -21,22 +21,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
-from utils import do_overlap
-
-Rect = List[List[float]]  # [[x1, y1], [x2, y2]]
+from utils import do_overlap, Point, Item, Bin, Rect
 
 
 # ---------------------------------------------------------------------------
 # Geometry helpers
 # ---------------------------------------------------------------------------
-
-
-class Point:
-    __slots__ = ("x", "y")
-
-    def __init__(self, x: float, y: float) -> None:
-        self.x = x
-        self.y = y
 
 
 def _round1(value: float) -> float:
@@ -85,59 +75,6 @@ def shared_edge_length(a: Rect, b: Rect) -> float:
         if abs(ay2 - by1) < 1e-6 or abs(ay1 - by2) < 1e-6:
             shared += x_hi - x_lo
     return shared
-
-
-# ---------------------------------------------------------------------------
-# Data model
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class Item:
-    name: str
-    length: float
-    height: float
-    width: float
-    volume: float
-    stackable: bool = True
-
-    @property
-    def face_area_flat(self) -> float:
-        return self.length * self.height
-
-    @property
-    def max_side(self) -> float:
-        return max(self.length, self.height, self.width)
-
-
-@dataclass
-class Bin:
-    name: str
-    length: float
-    height: float
-    width: float
-    volume: float
-    remaining_volume: float = 0.0
-    games: List[str] = field(default_factory=list)
-    locations: List[Rect] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        if self.remaining_volume == 0.0:
-            self.remaining_volume = self.volume
-
-    @property
-    def used_volume(self) -> float:
-        return max(0.0, self.volume - self.remaining_volume)
-
-    @property
-    def utilization(self) -> float:
-        if self.volume <= 0:
-            return 0.0
-        return self.used_volume / self.volume
-
-    @property
-    def face_area(self) -> float:
-        return self.length * self.height
 
 
 SOFT_KEYS = (

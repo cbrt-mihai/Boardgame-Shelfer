@@ -1,59 +1,124 @@
 # NAME  LENGTH  HEIGHT  WIDTH
-#Counterfeiters, 19.1, 4.5, 13.
-#Monty Python Fluxx, 12.7, 2.5, 9.5
-#Warp's Edge, 24.1, 7.4, 18.4, X
+#Welcome to the Dungeon, 15, 4, 10
+51st State: Ultimate Edition, 29.5, 10.0, 29.5
 Abomination: The Heir of Frankenstein, 29.7, 7.1, 29.7
 Abyss, 28.5, 7.5, 28.5
+Adrenaline, 36.7, 7.2, 25.7
 Age of Atlantis, 27.9, 7.6, 27.9
-Ankh: Gods of Egypt, 32.4, 28, 32.4, X
-Bullet, 30, 15, 30
+Andean Abyss, 31, 7.6, 23.4
+Angel Fury, 29, 10, 42
+Ankh: Gods of Egypt, 32.4, 28, 32.4
+Binding of Isaac: Four Souls, 30.8, 13.0, 25.5
+Bloody Inn, 24.0, 4.4, 19.0
+Blue Moon Legends Both, 29.2, 14, 29.2
+Bunny Kingdom, 29.7, 7.1, 29.7
 Castles of Burgundy + builds, 37, 23.5, 27
 Chamber of Wonders, 33, 7, 33, X
+Chocolate Factory, 30, 8, 22
 Clash of Rage, 38.7, 10.5, 38.7
+Claustrophobia, 47, 21, 26.7, X
 Cleopatra and the Society of Architects, 30.5, 17.8, 30.5
+Coup G54, 25.1, 8.9, 20.3
+Creature Comforts, 29.5, 6.0, 21.5
+Dale of Merchants, 29.5, 7.5, 29.5
+Darwin's Choice, 20.5, 7, 20.5, X
+Dawn of Ulos, 31.8, 8.9, 22.9
+Deal with the Devil, 37, 7, 25.5
 Decorum, 29.5, 7.5, 29.5
-Dragon Castle, 29.7, 7.1, 29.7
+Dice Forge, 28.5, 7.7, 28.5
+Dice Forge: Rebellion, 28.4, 7.6, 14.1
+Dungeon Drop, 38.0, 11.0, 22.2
 Elysium, 29.5, 7.9, 29.5
 Evil Corp., 30, 7, 30
-Evolution: Climate, 29.7, 9.3, 29.7
-Evolution: Flight, 22.9, 5.1, 20.3
+Evolution: Climate, 29.7, 9.3, 29.7, X
 Fantasy Realms Deluxe, 22.9, 3.8, 16.5
+#Feudalia
 First Contact, 26.5, 6, 26.5
-Flamecraft, 29.7, 7, 29.7
+Five Tribes, 29.5, 7.2, 29.5
 Fleet: The Dice Game, 21.6, 5.1, 15.7
+#Flip Circus
+Fuji Koro, 29.2, 17.8, 29.2
 Game of Thrones: B'Twixt, 23.1, 5.3, 16.1
+Gods love Dinosaurs, 29.5, 7.2, 29.5
+Golden Cup, 30, 5, 30
+Golem, 31.5, 9.5, 22.5
+Hanamikoji, 19.0, 10.0, 13.5
+Harmonies, 21.3, 6.7, 21.3
+Henhouse Havoc, 26, 8.2, 26
+Hex Effects, 15.7, 3, 13.7
 Hidden Leaders Kickstarter, 22.8, 5.2, 16
-Isla Dorada, 30, 7.6, 30
 It's a Wonderful Kingdom, 29.7, 7.1, 29.7
 It's a Wonderful World, 29, 7, 29
+Iwari, 30, 6, 30
+Kashgar: Merchant of the Silk Road, 29, 6.7, 18
+Kharnage, 25, 5, 25
+Kingdomino, 20, 5, 20
+Let's go to Japan! Base, 24, 7, 24
+Let's go to Japan! Bowls, 24, 7, 24
+Let's go to Japan! Playmats, 24, 7, 24
+Libertalia: Winds of Galecrest, 29.7, 7.1, 29.7
 Life of the Amazonia, 29.7, 7.1, 29.7
+Lizard Wizard, 31.5, 7.5, 22.6
 Mage Knight, 35.6, 12.7, 35.6
-Mythic Mischief, 25.1, 12.1, 20.6, X
+Magna Roma, 29.7, 10, 29.7
+Maple Valley, 29.5, 6, 21.5
+Men at Work, 29.7, 7.3, 29.7
+Mezo, 39.5, 9.0, 27.5
+Micro Cosmos, 15.0, 7.2, 10.0
+MLEM: Space Agency, 27.5, 7.0, 27.5
+Monsters on Board, 29.7, 7.1, 29.7
+Monstrolicious, 17.1, 3.8, 12.1
+Monty Python Fluxx
+Mutants, 29.7, 7.1, 29.7
 Nidavellir, 25, 7.7, 25
-Nightmare Cathedral, 29.6, 15, 29.6 
+Nightmare Cathedral, 29.6, 15, 29.6
 Nothing Personal, 29.7, 9.5, 29.7, X
+Odin's Ravens, 17, 4, 13
+Open Season, 24.5, 6, 24.5
 Oracle of Delphi, 31.5, 5.6, 22.6
 Oros, 29.6, 11.6, 29.6
+Palaces of Carrara, 29.7, 7.1, 29.7
+Pax Illuminaten, 15.2, 7.6, 15.2
+Port Royal, 27.5, 7, 19
 Power Plants, 29.5, 8, 21.5, X
+Power Struggle, 39.5, 5.1, 28.0
 Quarriors, 33, 5.3, 26, X
 Ra, 27, 11, 22
-Race for the Galaxy Alien, 19.1, 6.7, 14
-Race for the Galaxy Arc1, 27.4, 6.6, 19.1
-Race for the Galaxy Base, 27.4, 6.6, 19.1
-Race for the Galaxy Xeno, 19.1, 6.7, 14
 Ragnarocks, 30, 7.5, 30
-Rattus 1&2, 27.2, 11.6, 18.8
+Rattus 1&2, 27.2, 11.6, 18.8, X
 Res Arcana, 24.8, 6.1, 24.8
+Riddle of the Sphinx, 39.2, 4.0, 32.2
+Riff Raff, 29.7, 8.7, 29.7
+Rise, 31.5, 5.6, 22.6
+Rise & Fall, 32, 16, 32
 Rising Sun, 32.5, 28, 32.5
+River Valley Glassworks
+Roll Player
 Sanctum, 37, 7.5, 25.5
-Santorini, 30, 6.9, 30
-Santorini: Golden Fleece, 29.8, 6.6, 15
-Skulk Peak, 29.7, 14.2, 29.7
+Santorini, 35, 10, 35
+Scepter of Zavandor
+SCOUT
+Seasons
+Seize the Bean
+Set a Watch
+Shadow Network
+Shelfie Stacker
+Shogun no Katana
+Smartphone Inc.
 Sons of Faeriell, 32, 13.9, 32
 Spirit Island, 29.3, 16.2, 29.3, X
-The Binding of Isaac: Four Souls, 30.8, 13, 25.5
+Stationfall, 29.7, 8.5, 29.7
+Steampunk Rally Fusion
+Tag Team
+Tapestry
+Tavern Tales
+Tiny Epic Game of Thrones
+Unconscious Mind
 Veiled Fate, 31.8, 10.2, 26.7
 Vindication, 39.4, 11.3, 31.8, X
-Welcome to the Dungeon, 15, 4, 10
+Welcome to the Dungeon
 White Castle, 23, 6.6, 18, X
+Wok and Roll
+Xia
 Yamatai, 29.5, 7.5, 29.5
+Zoo Vadis
