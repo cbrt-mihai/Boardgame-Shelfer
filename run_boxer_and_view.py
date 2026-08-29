@@ -69,7 +69,7 @@ def main() -> None:
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
 
-    url = f"http://127.0.0.1:{port}/index.html"
+    url = f"http://127.0.0.1:{port}/index_box.html"
     print(f"Opening {url}")
     print("Press Enter to stop the local server.")
     webbrowser.open(url)

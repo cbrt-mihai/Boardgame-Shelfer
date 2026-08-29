@@ -6,6 +6,7 @@ from typing import List
 OK = 0
 ITEM_TOO_BIG = 1
 ITEM_INTERSECTS = 2
+ITEM_OUT_OF_BOUNDS = 3
 
 
 # Each orientation maps to (top-view UP dimension, top-view RIGHT dimension, vertical dimension).
@@ -171,6 +172,22 @@ def item_too_big(item: Item, bin: Bin) -> bool:
     return item.volume > bin.currentVolume
 
 
+def item_out_of_bounds(item: Item, bin: Bin) -> bool:
+    # An item must sit fully inside the bin's physical footprint, not just
+    # fit within the bin's remaining *volume*. Volume alone doesn't stop an
+    # item from being placed with a corner sticking out past the bin's
+    # length/height/width (which is what was causing items to render as
+    # oversized/overflowing boxes in the viewer).
+    return (
+        item.corner1.x < 0
+        or item.corner1.y < 0
+        or item.corner1.z < 0
+        or item.corner2.x > bin.length
+        or item.corner2.y > bin.height
+        or item.corner2.z > bin.width
+    )
+
+
 def item_intersects(item1: Item, item2: Item) -> bool:
     return item1.corner1.x < item2.corner2.x and item1.corner2.x > item2.corner1.x and item1.corner1.y < item2.corner2.y and item1.corner2.y > item2.corner1.y and item1.corner1.z < item2.corner2.z and item1.corner2.z > item2.corner1.z
 
@@ -180,6 +197,10 @@ def can_add_item_to_bin(item: Item, bin: Bin):
         # print(f"[!] Item {item.name} is too large for bin {bin.name}")
         return ITEM_TOO_BIG, False
 
+    if item_out_of_bounds(item, bin):
+        # print(f"[!] Item {item.name} does not fit within bin {bin.name}'s dimensions")
+        return ITEM_OUT_OF_BOUNDS, False
+
     for item_in_bin in bin.contains:
         if item_intersects(item, item_in_bin):
             return ITEM_INTERSECTS, False
@@ -187,62 +208,89 @@ def can_add_item_to_bin(item: Item, bin: Bin):
     return OK, True
 
 
+EPS = 1e-6
+
+
+def resting_y(x1: float, x2: float, z1: float, z2: float, bin: "Bin") -> float:
+    """
+    Compute the height at which an item with the given (x1..x2, z1..z2)
+    footprint would come to rest inside `bin`.
+
+    An item can only be considered "supported" at a height above the floor
+    if some single existing item's footprint fully contains this item's
+    footprint (i.e. the new item would land flush on top of it, with no
+    part of it hanging out over empty space). Otherwise it settles on the
+    bin floor (y=0).
+
+    This intentionally does NOT let two adjacent, equal-height items
+    jointly support a wider item spanning both of them - that requires
+    tracking a footprint union rather than single-item containment, which
+    is more than this simple heuristic packer attempts. The tradeoff is a
+    few missed placements in exchange for never producing a floating item.
+
+    Note this only decides the *candidate* height to try; can_add_item_to_bin
+    still performs the real overlap/bounds check afterwards, so an
+    unsupported-but-non-overlapping candidate here can never be silently
+    accepted as a false "fit".
+    """
+    best_y = 0.0
+    for existing in bin.contains:
+        fully_contains = (
+            existing.corner1.x <= x1 + EPS
+            and existing.corner2.x >= x2 - EPS
+            and existing.corner1.z <= z1 + EPS
+            and existing.corner2.z >= z2 - EPS
+        )
+        if fully_contains and existing.corner2.y > best_y:
+            best_y = existing.corner2.y
+    return best_y
+
+
 def add_items_in_bins(items: List[Item], bins: List[Bin]):
     unplaced_items = copy.copy(items)
     for item in items:
-        bins.sort(key=lambda bin: bin.currentVolume)
+        bins.sort(key=lambda b: b.currentVolume)
         placed = False
+
         for bin in bins:
-            if not placed:
-                orientations = ["wlr", "wlu", "hlr", "hlu", "hwr", "hwu"]
-                for orientation in orientations:
-                    item.update_corners(0,0, 0, orientation)
+            if placed:
+                break
+
+            orientations = ["wlr", "wlu", "hlr", "hlu", "hwr", "hwu"]
+            for orientation in orientations:
+                if placed:
+                    break
+
+                dims = {"length": item.length, "height": item.height, "width": item.width}
+                up_dim, right_dim, _vertical_dim = ORIENTATIONS[orientation]
+                right_extent = dims[right_dim]
+                up_extent = dims[up_dim]
+
+                # Candidate (x, z) footprint positions: the origin, plus the
+                # footprint corners of every item already in the bin. These
+                # are the only x/z positions where a new item could conceivably
+                # butt up against something already placed.
+                candidate_xz = [(0.0, 0.0)]
+                for existing in bin.contains:
+                    candidate_xz.extend([
+                        (existing.corner2.x, existing.corner1.z),
+                        (existing.corner1.x, existing.corner2.z),
+                        (existing.corner2.x, existing.corner2.z),
+                    ])
+
+                for cx, cz in candidate_xz:
+                    cy = resting_y(cx, cx + right_extent, cz, cz + up_extent, bin)
+                    item.update_corners(cx, cy, cz, orientation)
                     code, ok = can_add_item_to_bin(item, bin)
                     if ok:
-                        announce_placement(item, bin, "above", orientation)
-                        bin.add_item(item)
+                        announce_placement(item, bin, "placed", orientation)
+                        bin.add_item(copy.deepcopy(item))
                         bin.update_volume(item.volume)
                         unplaced_items.remove(item)
                         placed = True
                         break
-                    elif code == ITEM_INTERSECTS:
-                        for item_in_bin in bin.contains:
-                            placements = ["up", "right"]
-                            if not placed:
-                                for placement in placements:
-                                    match placement:
-                                        case "up":
-                                            item.update_corners(0,0, item_in_bin.corner2.z, orientation)
-                                        case "right":
-                                            item.update_corners(item_in_bin.corner2.x, item_in_bin.corner2.y, 0, orientation)
 
-                                    code, ok = can_add_item_to_bin(item, bin)
-                                    if ok:
-                                        announce_placement(item, bin, "above", orientation)
-                                        bin.add_item(item)
-                                        bin.update_volume(item.volume)
-                                        unplaced_items.remove(item)
-                                        placed = True
-                                        break
-
-                            if not placed:
-                                # ABOVE
-                                item.update_corners(0, item_in_bin.corner2.y, 0, orientation)
-                                code, ok = can_add_item_to_bin(item, bin)
-                                if ok:
-                                    announce_placement(item, bin, "above", orientation)
-                                    bin.add_item(item)
-                                    bin.update_volume(item.volume)
-                                    unplaced_items.remove(item)
-                                    placed = True
-                                    break
-
-    items = unplaced_items
-
-    items.sort(key=lambda item: item.volume)
-    bins.sort(key=lambda bin: bin.currentVolume)
-
-    return items, bins
+    return unplaced_items, bins
 
 
 def announce_placement(item: Item, bin: Bin, placement: str, orientation: str):
