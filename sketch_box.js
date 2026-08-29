@@ -3,9 +3,10 @@ const scaleFactor = 10;
 
 // Thickness (in the same units as your bins/items file) of each horizontal
 // cross-section "slice" view. Lower = more slices, finer detail.
-const SLICE_INTERVAL = 5;
+const SLICE_INTERVAL = 2;
 
 let result;
+let parsedBins = [];
 
 async function setup() {
   noLoop();
@@ -39,6 +40,7 @@ async function setup() {
   }
 
   const bins = parseOutput(result);
+  parsedBins = bins;
 
   if (bins.length === 0) {
     renderMessage(container, "output.txt didn't contain any bins (no '#' header lines found).", true);
@@ -60,7 +62,12 @@ function createPageContainer() {
     body { background: #000; color: #eee; font-family: sans-serif; margin: 0; padding: 20px; }
     .bin-section { margin-bottom: 48px; border-bottom: 1px solid #333; padding-bottom: 32px; }
     .bin-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-    .bin-heading h2 { margin: 0 0 4px 0; }
+    .bin-heading h2 {
+      margin: 0 0 4px 0;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
     .bin-heading .meta { color: #999; font-size: 14px; }
     .bin-heading button {
       margin-left: auto; background: #222; color: #eee; border: 1px solid #555;
@@ -70,8 +77,55 @@ function createPageContainer() {
     .bin-canvas-wrap { overflow-x: auto; margin-top: 12px; }
     .empty-note { color: #e0a030; margin-top: 8px; }
     .error-note { color: #e05050; }
+    .page-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 0 0 28px 0;
+      padding: 12px 14px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
+    
+    .page-toolbar .download-all {
+      background: #eee;
+      color: #111;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .page-toolbar .download-all:hover {
+      background: #fff;
+    }
+    
+    .toolbar-help {
+      color: #999;
+      font-size: 13px;
+    }
   `;
   document.head.appendChild(style);
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "page-toolbar";
+
+  const downloadAllBtn = document.createElement("button");
+  downloadAllBtn.className = "download-all";
+  downloadAllBtn.textContent = "Download all PNGs";
+  downloadAllBtn.onclick = () => downloadAllBins(downloadAllBtn);
+  toolbar.appendChild(downloadAllBtn);
+
+  const help = document.createElement("span");
+  help.className = "toolbar-help";
+  help.textContent = "Each bin is exported as one PNG.";
+  toolbar.appendChild(help);
+
+  document.body.appendChild(toolbar);
 
   const container = document.createElement("div");
   container.id = "bins-container";
@@ -85,6 +139,98 @@ function renderMessage(container, text, isError) {
   p.textContent = text;
   container.appendChild(p);
 }
+
+
+function ensureJSZip() {
+  if (window.JSZip) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+
+    script.onload = resolve;
+
+    script.onerror = () =>
+      reject(
+        new Error(
+          "Could not load JSZip. Check your internet connection."
+        )
+      );
+
+    document.head.appendChild(script);
+  });
+}
+
+
+async function downloadAllBins(button) {
+  const oldText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "Loading ZIP tool...";
+
+  try {
+    await ensureJSZip();
+
+    button.textContent = "Preparing ZIP...";
+
+    const zip = new JSZip();
+
+    for (const bin of parsedBins) {
+      const pg = buildBinGraphics(bin);
+
+      const dataUrl = pg.canvas.toDataURL("image/png");
+      const base64 = dataUrl.split(",")[1];
+
+      const filename = safeFilename(bin.name) + ".png";
+
+      zip.file(filename, base64, {
+        base64: true
+      });
+
+      pg.remove();
+    }
+
+    const blob = await zip.generateAsync({
+      type: "blob"
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "box_packing_visualizations.zip";
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+
+  } catch (err) {
+    console.error(err);
+
+    alert(
+      `Failed to create ZIP: ${err.message}`
+    );
+
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+}
+
+
+function safeFilename(name) {
+  return (
+    String(name).replace(/[^a-zA-Z0-9_-]/g, "_") ||
+    "bin"
+  );
+}
+
 
 // ---------------------------------------------------------------------
 // Parsing output.txt
@@ -203,12 +349,16 @@ function buildBinGraphics(bin) {
   );
 
   const canvasHeight =
-    30 +                                    // title
+    30 +
     margin +
-    topHeight + margin * 2 +                // top view
-    frontHeight + margin * 2 +              // front/back row
-    sideHeight + margin * 2 +               // left/right row
-    sliceRanges.length * sliceRowHeight +    // slice rows
+    topHeight + margin * 2 +
+    frontHeight + margin * 2 +
+    sideHeight + margin * 2 +
+    sliceRanges.length * sliceRowHeight +
+    max(
+      80,
+      ceil(bin.items.length / 3) * 30 + 50
+    ) +
     margin;
 
   const pg = createGraphics(canvasWidth, canvasHeight);
@@ -247,6 +397,13 @@ function buildBinGraphics(bin) {
     cursorY += sliceRowHeight;
   }
 
+  drawLegend(
+    pg,
+    bin,
+    margin,
+    cursorY
+  );
+
   return pg;
 }
 
@@ -265,13 +422,13 @@ function drawTopView(pg, bin, ox, oy) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
+  bin.items.forEach((item, index) => {
     const x1 = ox + item.x1 * scaleFactor;
     const x2 = ox + item.x2 * scaleFactor;
     const y1 = oy + item.z1 * scaleFactor;
     const y2 = oy + item.z2 * scaleFactor;
-    drawItem(pg, item, x1, y1, x2, y2, true);
-  }
+    drawItem(pg, item, x1, y1, x2, y2, true, index);
+  });
 }
 
 function drawFrontView(pg, bin, ox, oy) {
@@ -285,13 +442,13 @@ function drawFrontView(pg, bin, ox, oy) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
+  bin.items.forEach((item, index) => {
     const x1 = ox + item.x1 * scaleFactor;
     const x2 = ox + item.x2 * scaleFactor;
     const y1 = oy + h - item.y2 * scaleFactor;
     const y2 = oy + h - item.y1 * scaleFactor;
-    drawItem(pg, item, x1, y1, x2, y2, true);
-  }
+    drawItem(pg, item, x1, y1, x2, y2, true, index);
+  });
 }
 
 function drawBackView(pg, bin, ox, oy) {
@@ -305,13 +462,13 @@ function drawBackView(pg, bin, ox, oy) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
+  bin.items.forEach((item, index) => {
     const x1 = ox + w - item.x2 * scaleFactor;
     const x2 = ox + w - item.x1 * scaleFactor;
     const y1 = oy + h - item.y2 * scaleFactor;
     const y2 = oy + h - item.y1 * scaleFactor;
-    drawItem(pg, item, x1, y1, x2, y2, true);
-  }
+    drawItem(pg, item, x1, y1, x2, y2, true, index);
+  });
 }
 
 function drawLeftView(pg, bin, ox, oy) {
@@ -325,13 +482,13 @@ function drawLeftView(pg, bin, ox, oy) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
+  bin.items.forEach((item, index) => {
     const x1 = ox + item.z1 * scaleFactor;
     const x2 = ox + item.z2 * scaleFactor;
     const y1 = oy + h - item.y2 * scaleFactor;
     const y2 = oy + h - item.y1 * scaleFactor;
-    drawItem(pg, item, x1, y1, x2, y2, true);
-  }
+    drawItem(pg, item, x1, y1, x2, y2, true, index);
+  });
 }
 
 function drawRightView(pg, bin, ox, oy) {
@@ -345,13 +502,13 @@ function drawRightView(pg, bin, ox, oy) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
+  bin.items.forEach((item, index) => {
     const x1 = ox + w - item.z2 * scaleFactor;
     const x2 = ox + w - item.z1 * scaleFactor;
     const y1 = oy + h - item.y2 * scaleFactor;
     const y2 = oy + h - item.y1 * scaleFactor;
-    drawItem(pg, item, x1, y1, x2, y2, true);
-  }
+    drawItem(pg, item, x1, y1, x2, y2, true, index);
+  });
 }
 
 // A horizontal cross-section: a top-down plan view of everything occupying
@@ -370,19 +527,135 @@ function drawSliceView(pg, bin, ox, oy, y0, y1) {
   pg.strokeWeight(strokeW);
   pg.rect(ox, oy, w, h);
 
-  for (const item of bin.items) {
-    // Does this item's vertical extent intersect the slice band at all?
-    const overlaps = item.y1 < y1 && item.y2 > y0;
-    if (!overlaps) continue;
+  bin.items.forEach((item, index) => {
+  const overlaps = item.y1 < y1 && item.y2 > y0;
+  if (!overlaps) return;
 
-    const fullySpans = item.y1 <= y0 + 1e-9 && item.y2 >= y1 - 1e-9;
+  const fullySpans = item.y1 <= y0 + 1e-9 && item.y2 >= y1 - 1e-9;
 
-    const x1 = ox + item.x1 * scaleFactor;
-    const x2 = ox + item.x2 * scaleFactor;
-    const y1px = oy + item.z1 * scaleFactor;
-    const y2px = oy + item.z2 * scaleFactor;
-    drawItem(pg, item, x1, y1px, x2, y2px, fullySpans);
+  const x1 = ox + item.x1 * scaleFactor;
+  const x2 = ox + item.x2 * scaleFactor;
+  const y1px = oy + item.z1 * scaleFactor;
+  const y2px = oy + item.z2 * scaleFactor;
+
+  drawItem(pg, item, x1, y1px, x2, y2px, fullySpans, index);
+});
+}
+
+function drawLegend(pg, bin, ox, oy) {
+  if (bin.items.length === 0) {
+    return;
   }
+
+  pg.push();
+
+  pg.textAlign(
+    LEFT,
+    CENTER
+  );
+
+  pg.noStroke();
+  pg.fill(255);
+
+  pg.textSize(16);
+
+  pg.text(
+    "ITEM LEGEND",
+    ox,
+    oy + 8
+  );
+
+
+  const columns = 3;
+
+  const colW =
+    max(
+      180,
+      (pg.width - ox * 2) / columns
+    );
+
+  const rowH = 30;
+
+
+  bin.items.forEach(
+    (item, index) => {
+
+      const col =
+        index % columns;
+
+      const row =
+        floor(index / columns);
+
+      const x =
+        ox + col * colW;
+
+      const y =
+        oy + 38 +
+        row * rowH;
+
+
+      // Same colour calculation as drawItem().
+      let hash = 0;
+
+      for (
+        let i = 0;
+        i < item.name.length;
+        i++
+      ) {
+        hash =
+          ((hash << 5) - hash) +
+          item.name.charCodeAt(i);
+
+        hash |= 0;
+      }
+
+
+      const palette = [
+        [75, 170, 255],
+        [255, 145, 70],
+        [110, 210, 130],
+        [210, 130, 255],
+        [255, 210, 75],
+        [255, 105, 145],
+        [85, 220, 205],
+        [190, 190, 190]
+      ];
+
+      const c =
+        palette[
+          abs(hash) % palette.length
+        ];
+
+
+      // Colour marker.
+      pg.fill(
+        c[0],
+        c[1],
+        c[2]
+      );
+
+      pg.rect(
+        x,
+        y - 7,
+        14,
+        14,
+        2
+      );
+
+
+      // Item name.
+      pg.fill(255);
+      pg.textSize(13);
+
+      pg.text(
+        `#${index + 1}  ${item.name}`,
+        x + 22,
+        y
+      );
+    }
+  );
+
+  pg.pop();
 }
 
 function drawViewLabel(pg, label, x, y) {
@@ -398,17 +671,28 @@ function drawViewLabel(pg, label, x, y) {
 // by a slice boundary). p5 doesn't expose a stroke dash pattern directly on
 // its 2D canvas wrapper's `rect`, so we fall back to the underlying canvas
 // context to draw a dashed rect when needed.
-function drawItem(pg, item, x1, y1, x2, y2, solid) {
+function drawItem(pg, item, x1, y1, x2, y2, solid, itemIndex = 0) {
+  // A fixed palette gives items visually distinct colours.
+  const palette = [
+    [75, 170, 255],
+    [255, 145, 70],
+    [110, 210, 130],
+    [210, 130, 255],
+    [255, 210, 75],
+    [255, 105, 145],
+    [85, 220, 205],
+    [190, 190, 190]
+  ];
+
+  // Generate a stable colour from the item name.
   let hash = 0;
+
   for (let i = 0; i < item.name.length; i++) {
     hash = ((hash << 5) - hash) + item.name.charCodeAt(i);
     hash |= 0;
   }
 
-  const r = abs(hash) % 256;
-  const g = abs(hash * 17) % 256;
-  const b = abs(hash * 31) % 256;
-  const c = color(r, g, b);
+  const c = palette[abs(hash) % palette.length];
 
   const rx = min(x1, x2);
   const ry = min(y1, y2);
@@ -416,25 +700,180 @@ function drawItem(pg, item, x1, y1, x2, y2, solid) {
   const rh = abs(y2 - y1);
 
   const ctx = pg.drawingContext;
+
+  /*
+   * TRANSLUCENT FILL
+   *
+   * This is important for overlapping items.
+   * You can see the outlines/fills underneath another item.
+   */
   ctx.save();
-  ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-  ctx.lineWidth = strokeW;
-  ctx.setLineDash(solid ? [] : [6, 4]);
+
+  ctx.fillStyle =
+    `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.28)`;
+
+  ctx.fillRect(
+    rx,
+    ry,
+    rw,
+    rh
+  );
+
+  /*
+   * Strong coloured outline.
+   */
+  ctx.strokeStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.96)`;
+
+  ctx.lineWidth = max(strokeW, 2.5);
+
+  ctx.setLineDash(solid ? [] : [7, 5]);
+
   ctx.strokeRect(rx, ry, rw, rh);
   ctx.restore();
 
-  pg.noStroke();
-  pg.fill(c);
-  pg.textSize(12);
-  pg.textAlign(LEFT, TOP);
 
   const dx = abs(item.x2 - item.x1);
   const dy = abs(item.y2 - item.y1);
   const dz = abs(item.z2 - item.z1);
 
-  const label = `${item.name} (${nf(dx, 0, 1)}, ${nf(dy, 0, 1)}, ${nf(dz, 0, 1)})`;
+  const fullLabel =
+    `${item.name} (${nf(dx, 0, 1)}, ` +
+    `${nf(dy, 0, 1)}, ` +
+    `${nf(dz, 0, 1)})`;
 
-  pg.text(label, rx + 4, ry + 4, rw - 8, rh - 8);
+
+  /*
+   * LARGE ENOUGH ITEMS:
+   *
+   * Put the complete name on a dark translucent background.
+   * This makes white text readable regardless of the colour underneath.
+   */
+  if (rw >= 95 && rh >= 30) {
+
+    const fontSize =
+      constrain(
+        min(16, rh * 0.34),
+        10,
+        16
+      );
+
+    pg.push();
+
+    pg.textAlign(
+      LEFT,
+      TOP
+    );
+
+    pg.textSize(fontSize);
+
+    const labelW =
+      min(
+        rw - 8,
+        max(
+          55,
+          pg.textWidth(fullLabel) + 10
+        )
+      );
+
+    const labelH =
+      fontSize + 10;
+
+
+    // Dark label background.
+    pg.noStroke();
+    pg.fill(0, 210);
+
+    pg.rect(
+      rx + 3,
+      ry + 3,
+      labelW,
+      labelH,
+      3
+    );
+
+
+    // White text.
+    pg.fill(255);
+
+    pg.text(
+      fullLabel,
+      rx + 8,
+      ry + 7,
+      max(1, labelW - 10),
+      labelH - 4
+    );
+
+    pg.pop();
+
+  } else if (rw >= 34 && rh >= 20) {
+
+    /*
+     * SMALL ITEMS:
+     *
+     * Instead of trying to cram the complete name into a tiny rectangle,
+     * display an unambiguous item number.
+     *
+     * The complete name appears in the legend.
+     */
+    pg.push();
+
+    pg.textAlign(
+      LEFT,
+      TOP
+    );
+
+    pg.textSize(11);
+
+    const marker =
+      `#${itemIndex + 1}`;
+
+    const labelW =
+      pg.textWidth(marker) + 10;
+
+    pg.noStroke();
+    pg.fill(0, 220);
+
+    pg.rect(
+      rx + 2,
+      ry + 2,
+      labelW,
+      18,
+      3
+    );
+
+    pg.fill(255);
+
+    pg.text(
+      marker,
+      rx + 7,
+      ry + 5
+    );
+
+    pg.pop();
+  }
+
+
+  /*
+   * Tiny white corner marker.
+   *
+   * Even if most of the item is hidden behind another item,
+   * this gives you another visual clue that a separate item exists.
+   */
+  if (rw >= 14 && rh >= 14) {
+
+    pg.push();
+
+    pg.noStroke();
+    pg.fill(255, 230);
+
+    pg.circle(
+      rx + rw - 5,
+      ry + 5,
+      5
+    );
+
+    pg.pop();
+  }
 }
 
 function escapeHtml(str) {
