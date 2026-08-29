@@ -18,7 +18,10 @@ async function setup() {
   const container = createPageContainer();
 
   try {
-    result = await loadStrings("output.txt");
+    const res = await fetch("output.txt");
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    const text = await res.text();
+    result = text.split(/\r?\n/);
   } catch (err) {
     renderMessage(container, `Failed to load output.txt: ${err}`, true);
     return;
